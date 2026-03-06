@@ -12,8 +12,8 @@ const minioClient = new Minio.Client({
   endPoint: MINIO_ENDPOINT,
   port: MINIO_PORT,
   useSSL: MINIO_USE_SSL,
-  accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-  secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin'
+  accessKey: process.env.MINIO_ACCESS_KEY || '<your-access-key>',
+  secretKey: process.env.MINIO_SECRET_KEY || '<your-secret-key>'
 });
 
 export class ImageService {

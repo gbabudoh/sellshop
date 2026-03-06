@@ -2,11 +2,11 @@ require('dotenv').config({ path: '.env.local' });
 const Minio = require('minio');
 
 const minioClient = new Minio.Client({
-  endPoint: process.env.MINIO_ENDPOINT || '149.102.155.247',
+  endPoint: process.env.MINIO_ENDPOINT || 'localhost',
   port: parseInt(process.env.MINIO_PORT || '9000', 10),
   useSSL: process.env.MINIO_USE_SSL === 'true',
-  accessKey: process.env.MINIO_ACCESS_KEY || 'admin',
-  secretKey: process.env.MINIO_SECRET_KEY || 'G1veMePass2026'
+  accessKey: process.env.MINIO_ACCESS_KEY || '<your-access-key>',
+  secretKey: process.env.MINIO_SECRET_KEY || '<your-secret-key>'
 });
 
 const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'sellshop-media';

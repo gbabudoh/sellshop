@@ -5,6 +5,7 @@ A modern, secure peer-to-peer marketplace for buying and selling items locally. 
 ## 🎯 Project Overview
 
 Sellshop is a hyperlocal marketplace focused on:
+
 - **Local Pickup Only**: Eliminate shipping complexity and fraud
 - **Secure Escrow**: Payment held safely until both parties confirm
 - **Simple & Fast**: List items in seconds, complete transactions locally
@@ -70,62 +71,68 @@ sellshop/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - MinIO (for file storage, optional)
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd sellshop
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
 ```
 
 4. Configure your `.env.local`:
+
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/sellshop"
+DATABASE_URL="postgresql://<user>:<password>@localhost:5432/sellshop"
 
 # NextAuth
-NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_SECRET="<your-secret-key>"
 NEXTAUTH_URL="http://localhost:3000"
 
 # Google OAuth (optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GOOGLE_CLIENT_ID="<your-google-client-id>"
+GOOGLE_CLIENT_SECRET="<your-google-client-secret>"
 
 # MinIO (optional)
 MINIO_ENDPOINT="localhost"
 MINIO_PORT="9000"
 MINIO_USE_SSL="false"
-MINIO_ACCESS_KEY="minioadmin"
-MINIO_SECRET_KEY="minioadmin"
+MINIO_ACCESS_KEY="<your-minio-access-key>"
+MINIO_SECRET_KEY="<your-minio-secret-key>"
 MINIO_BUCKET_NAME="sellshop"
 MINIO_PUBLIC_URL="http://localhost:9000"
 
 # imgproxy (optional)
 IMGPROXY_URL="http://localhost:8080"
-IMGPROXY_KEY="your-key"
-IMGPROXY_SALT="your-salt"
+IMGPROXY_KEY="<your-imgproxy-key>"
+IMGPROXY_SALT="<your-imgproxy-salt>"
 ```
 
 5. Set up the database:
+
 ```bash
 npx prisma migrate dev
 ```
 
 6. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -146,6 +153,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## 🔑 Key Features
 
 ### For Buyers
+
 - Browse local listings with distance filtering
 - Search and filter by category, condition, price
 - Save favorite items
@@ -155,6 +163,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - In-app messaging
 
 ### For Sellers
+
 - Quick and easy listing creation (< 60 seconds)
 - Upload multiple product images
 - Set negotiable prices
@@ -164,6 +173,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - Dashboard with sales analytics
 
 ### Security & Trust
+
 - Secure escrow system: Payment held until both parties confirm
 - User authentication with email/password or Google OAuth
 - Seller ratings and review system
@@ -173,6 +183,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## 📊 Database Schema
 
 ### Core Models
+
 - **User**: Buyers and sellers with profiles, ratings, reviews
 - **Product**: Listings with images, location, condition
 - **Order**: Transactions with escrow and payment tracking
@@ -199,11 +210,13 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ## 🚢 Deployment
 
 ### Vercel (Recommended)
+
 ```bash
 vercel deploy
 ```
 
 ### Docker
+
 ```bash
 docker build -t sellshop .
 docker run -p 3000:3000 sellshop
@@ -221,6 +234,7 @@ npm run lint     # Run ESLint
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add amazing feature'`)

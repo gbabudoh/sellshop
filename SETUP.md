@@ -28,7 +28,7 @@ Create `.env.local` with the following variables:
 
 ```env
 # Database
-DATABASE_URL="postgresql://user:password@localhost:5432/sellshop"
+DATABASE_URL="postgresql://<user>:<password>@localhost:5432/sellshop"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="generate-with: openssl rand -base64 32"
@@ -42,15 +42,15 @@ GOOGLE_CLIENT_SECRET=""
 MINIO_ENDPOINT="localhost"
 MINIO_PORT="9000"
 MINIO_USE_SSL="false"
-MINIO_ACCESS_KEY="minioadmin"
-MINIO_SECRET_KEY="minioadmin"
+MINIO_ACCESS_KEY="<your-minio-access-key>"
+MINIO_SECRET_KEY="<your-minio-secret-key>"
 MINIO_BUCKET_NAME="sellshop"
 MINIO_PUBLIC_URL="http://localhost:9000"
 
 # Image Optimization (imgproxy - Optional)
 IMGPROXY_URL="http://localhost:8080"
-IMGPROXY_KEY=""
-IMGPROXY_SALT=""
+IMGPROXY_KEY="<your-imgproxy-key>"
+IMGPROXY_SALT="<your-imgproxy-salt>"
 ```
 
 ### 3. Generate NextAuth Secret
@@ -82,8 +82,8 @@ Visit `http://localhost:3000`
 ```bash
 # Using Docker
 docker run -p 9000:9000 -p 9001:9001 \
-  -e MINIO_ROOT_USER=minioadmin \
-  -e MINIO_ROOT_PASSWORD=minioadmin \
+  -e MINIO_ROOT_USER=<your-minio-user> \
+  -e MINIO_ROOT_PASSWORD=<your-minio-password> \
   minio/minio server /data --console-address ":9001"
 ```
 
@@ -94,8 +94,8 @@ Access MinIO Console: `http://localhost:9001`
 ```bash
 # Using Docker
 docker run -p 8080:8080 \
-  -e IMGPROXY_KEY=your-key \
-  -e IMGPROXY_SALT=your-salt \
+  -e IMGPROXY_KEY=<your-key> \
+  -e IMGPROXY_SALT=<your-salt> \
   darthsim/imgproxy
 ```
 
