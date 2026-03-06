@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { ProductCondition } from "@prisma/client";
+import { ProductCondition, UserRole } from "@prisma/client";
 import { slugify } from "@/utils/slugify";
 import { ImageService } from "@/lib/imageService";
 import { getServerSession } from "next-auth";
@@ -45,7 +45,13 @@ export async function POST(request: NextRequest) {
     const condition = formData.get("condition") as string; // Map to enum if needed
     const address = formData.get("address") as string;
     const isNegotiable = formData.get("isNegotiable") === "true";
+    const quantity = parseInt(formData.get("quantity") as string) || 1;
+    const durationWeeks = parseInt(formData.get("duration") as string) || 4;
     const file = formData.get("image") as File;
+
+    // Calculate expiration date
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (durationWeeks * 7));
 
     const imageUrls: string[] = [];
     if (file) {
@@ -58,9 +64,11 @@ export async function POST(request: NextRequest) {
       imageUrls.push(ImageService.getOptimizedUrl(rawUrl));
     }
 
-    // Generate slug
+    // Generate slug - only add suffix if slug already exists
     const baseSlug = slugify(title);
-    const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substr(2, 5)}`;
+    // @ts-ignore
+    const existing = await prisma.product.findFirst({ where: { slug: baseSlug } as any });
+    const uniqueSlug = existing ? `${baseSlug}-${Math.random().toString(36).substr(2, 5)}` : baseSlug;
 
     const session = (await getServerSession(authOptions)) as {
       user?: { id?: string; name?: string | null; email?: string | null };
@@ -69,37 +77,26 @@ export async function POST(request: NextRequest) {
     let sellerId = "";
 
     if (session?.user?.id) {
-      const userExists = await prisma.user.findUnique({
+      const dbUser = await prisma.user.findUnique({
         where: { id: session.user.id }
       });
-      if (!userExists) {
-        return NextResponse.json(
-          { error: "Your session is invalid (likely due to a database reset). Please log out and sign back in." },
-          { status: 401 }
-        );
+      if (dbUser) {
+        sellerId = dbUser.id;
       }
-      sellerId = session.user.id;
-    } else {
-      // Get a default seller if not logged in (for demo purposes)
-      let demoSeller = await prisma.user.findFirst({
-        where: { email: "seller@demo.com" }
-      });
+    }
 
-      if (!demoSeller) {
-        demoSeller = await prisma.user.findFirst();
-        
-        if (!demoSeller) {
-          demoSeller = await prisma.user.create({
-            data: {
-              email: "seller@demo.com",
-              name: "Demo Seller",
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              role: "SELLER" as any
-            }
-          });
-        }
+    // Fallback: try finding user by email from session
+    if (!sellerId && session?.user?.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      });
+      if (dbUser) {
+        sellerId = dbUser.id;
       }
-      sellerId = demoSeller.id;
+    }
+
+    if (!sellerId) {
+      return NextResponse.json({ error: "You must be signed in to create a listing" }, { status: 401 });
     }
 
     const newProduct = await prisma.product.create({
@@ -113,6 +110,8 @@ export async function POST(request: NextRequest) {
         condition: (condition as ProductCondition) || ProductCondition.USED_GOOD,
         address,
         isNegotiable,
+        quantity,
+        expiresAt,
         images: imageUrls,
         status: "ACTIVE",
         sellerId: sellerId,
@@ -123,8 +122,16 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(newProduct, { status: 201 });
-  } catch (error) {
-    console.error("Failed to create product:", error);
-    return NextResponse.json({ error: "Failed to create product", details: String(error) }, { status: 500 });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("CRITICAL ERROR in POST /api/products:", err);
+    return NextResponse.json(
+      { 
+        error: "Failed to create product", 
+        details: err?.message || String(error),
+        stack: err?.stack
+      }, 
+      { status: 500 }
+    );
   }
 }

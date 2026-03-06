@@ -36,28 +36,32 @@ export async function GET(
     });
 
     if (product) {
-      // Map database product to the expected detail format
-      // Note: In a real app, you might want to store these extra details in the DB
-      // For now, we'll augment the DB data with some descriptive defaults for UI
-      const seller = (product as unknown as { 
-        seller: { 
-          name: string | null; 
-          rating: number | null; 
-          reviewCount: number; 
-          createdAt: Date; 
-        } 
-      }).seller;
+      const sellerId = (product as any).sellerId;
+
+      // Count actual items sold by this seller
+      const itemsSold = await prisma.product.count({
+        where: { sellerId, status: "SOLD" },
+      });
+
+      // Count total active listings
+      const totalListings = await prisma.product.count({
+        where: { sellerId, status: "ACTIVE" },
+      });
+
+      const seller = (product as any).seller;
+      const memberSince = new Date(seller.createdAt);
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const memberSinceStr = `${monthNames[memberSince.getMonth()]} ${memberSince.getFullYear()}`;
 
       return NextResponse.json({
         ...product,
-        // Ensure seller fields match what the UI expects
         seller: {
           ...seller,
-          responseTime: "Usually responds within 1 hour",
-          memberSince: seller.createdAt.getFullYear().toString(),
-          itemsSold: 42, // Mock if not in DB
+          responseTime: seller.bio || null,
+          memberSince: memberSinceStr,
+          itemsSold,
+          totalListings,
         },
-        // Detailed specifications mock (since not in base schema yet)
         details: {
           category: product.category,
           condition: (product.condition as string).replace(/_/g, " "),

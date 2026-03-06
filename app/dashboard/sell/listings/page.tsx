@@ -106,7 +106,7 @@ export default function SellerListingsPage() {
       >
         <div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-            My Portfolio
+            My Product Listing
           </h1>
           <p className="text-gray-500 mt-1">Manage, edit, and track your active listings.</p>
         </div>
@@ -184,7 +184,7 @@ export default function SellerListingsPage() {
             className="flex flex-col items-center justify-center py-20 bg-white/40 backdrop-blur-md rounded-2xl border border-dashed border-gray-200 mt-4"
           >
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-500 font-medium tracking-wide">Fetching Portfolio...</p>
+            <p className="text-gray-500 font-medium tracking-wide">Fetching Product Listings...</p>
           </motion.div>
         ) : filteredListings.length === 0 ? (
           <motion.div

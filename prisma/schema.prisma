@@ -61,7 +61,9 @@ model Product {
   address     String?
   images      String[]  // Array of image URLs
   isNegotiable Boolean  @default(false)
+  quantity    Int       @default(1)
   viewCount   Int       @default(0) @map("view_count")
+  expiresAt   DateTime? @map("expires_at")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   

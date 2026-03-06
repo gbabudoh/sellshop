@@ -30,7 +30,7 @@ type ProductDetail = {
     image: string | null;
     rating: number;
     reviewCount: number;
-    responseTime: string;
+    responseTime: string | null;
     memberSince: string;
     itemsSold: number;
   };
@@ -307,7 +307,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   </div>
                 </div>
                 <div className="space-y-2 text-sm text-gray-700 mb-5 font-medium">
-                  <p className="flex items-center gap-2"><CheckCircle size={16} className="text-blue-500" /> {product.seller.responseTime}</p>
+                  {product.seller.responseTime && <p className="flex items-center gap-2"><CheckCircle size={16} className="text-blue-500" /> {product.seller.responseTime}</p>}
                   <p className="flex items-center gap-2"><CheckCircle size={16} className="text-blue-500" /> {product.seller.itemsSold} items sold</p>
                   <p className="flex items-center gap-2"><CheckCircle size={16} className="text-blue-500" /> Member since {product.seller.memberSince}</p>
                 </div>

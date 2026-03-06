@@ -10,8 +10,8 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-        hostname: 'localhost',
-        port: '9000',
+        hostname: process.env.MINIO_ENDPOINT || 'localhost',
+        port: process.env.MINIO_PORT || '9000',
         pathname: '/**',
       },
       {

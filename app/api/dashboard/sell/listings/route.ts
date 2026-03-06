@@ -1,30 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/db";
-import { authOptions } from "@/lib/auth";
-
-export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const session = (await getServerSession(authOptions)) as {
-      user?: { id?: string; name?: string | null; email?: string | null };
-    } | null;
-
-    if (!session || !session.user || !session.user.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = session.user.id;
-
-    // Fetch listings
-    const listings = await prisma.product.findMany({
-      where: {
-        sellerId: userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         title: true,
@@ -35,24 +15,24 @@ export async function GET() {
         category: true,
         address: true,
         images: true,
-      }
+      },
     });
 
-    const formattedListings = listings.map((item) => ({
-      id: item.id,
-      title: item.title,
-      price: item.price,
-      status: item.status,
-      views: item.viewCount,
-      createdAt: new Date(item.createdAt).toISOString().split('T')[0],
-      category: item.category,
-      location: item.address || "No Location",
-      image: item.images && item.images.length > 0 ? item.images[0] : "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&q=80",
+    const listings = products.map((p) => ({
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      status: p.status,
+      views: p.viewCount,
+      createdAt: new Date(p.createdAt).toLocaleDateString(),
+      category: p.category,
+      location: p.address || "Not specified",
+      image: p.images[0] || "https://via.placeholder.com/400x300?text=No+Image",
     }));
 
-    return NextResponse.json(formattedListings);
+    return NextResponse.json(listings);
   } catch (error) {
     console.error("Failed to fetch seller listings:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json([], { status: 500 });
   }
 }

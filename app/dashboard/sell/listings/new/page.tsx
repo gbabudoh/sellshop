@@ -18,6 +18,8 @@ export default function NewListingPage() {
     condition: "USED_LIKE_NEW",
     address: "",
     isNegotiable: false,
+    quantity: 1,
+    duration: "4", // weeks
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -130,6 +132,8 @@ export default function NewListingPage() {
                     condition: "USED_LIKE_NEW",
                     address: "",
                     isNegotiable: false,
+                    quantity: 1,
+                    duration: "4",
                   });
                   setImageFile(null);
                   setImagePreview(null);
@@ -217,6 +221,46 @@ export default function NewListingPage() {
                     <option value="Photography">Photography</option>
                     <option value="Smartphones">Smartphones</option>
                     <option value="Other">Other</option>
+                  </select>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <motion.div variants={itemVariants} className="space-y-1.5">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-sm font-semibold text-gray-700">Product Quantity</label>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-0.5 rounded-md border border-gray-200">
+                    Max 20
+                  </span>
+                </div>
+                <div className="relative">
+                  <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-gray-900"
+                    required
+                  />
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants} className="space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700 ml-1">Listing Duration</label>
+                <div className="relative">
+                  <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={18} />
+                  <select
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium text-gray-900 appearance-none cursor-pointer relative z-0"
+                    required
+                  >
+                    <option value="1">1 Week</option>
+                    <option value="2">2 Weeks</option>
+                    <option value="4">4 Weeks (Default)</option>
                   </select>
                 </div>
               </motion.div>
