@@ -1,0 +1,291 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model representing both buyers and sellers
+model User {
+  id                String    @id @default(uuid())
+  name              String?
+  email             String    @unique
+  emailVerified     DateTime? @map("email_verified")
+  hashedPassword    String?   @map("hashed_password")
+  image            String?
+  role             UserRole  @default(USER)
+  phoneNumber      String?   @map("phone_number")
+  location         Json?     // Store geolocation data
+  address          String?
+  bio              String?   @db.Text
+  rating           Float?    @default(0)
+  reviewCount      Int       @default(0) @map("review_count")
+  stripeAccountId  String?   @map("stripe_account_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  products         Product[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  sentReviews      Review[]  @relation("SentReviews")
+  receivedReviews  Review[]  @relation("ReceivedReviews")
+  ordersAsBuyer    Order[]   @relation("BuyerOrders")
+  ordersAsSeller   Order[]   @relation("SellerOrders")
+  savedItems       SavedItem[]
+  notifications    Notification[]
+  
+  // Messaging & Offers
+  conversations1   Conversation[] @relation("Participant1")
+  conversations2   Conversation[] @relation("Participant2")
+  offersAsBuyer    Offer[]        @relation("BuyerOffers")
+  offersAsSeller   Offer[]        @relation("SellerOffers")
+
+  @@map("users")
+}
+
+// Product model for items being sold
+model Product {
+  id          String    @id @default(uuid())
+  title       String    @db.VarChar(255)
+  slug        String    @unique
+  description String    @db.Text
+  price       Float
+  category    String
+  condition   ProductCondition @default(USED_GOOD)
+  status      ProductStatus    @default(ACTIVE)
+  location    Json?     // Store geolocation data for search
+  address     String?
+  images      String[]  // Array of image URLs
+  isNegotiable Boolean  @default(false)
+  viewCount   Int       @default(0) @map("view_count")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  sellerId    String    @map("seller_id")
+  seller      User      @relation(fields: [sellerId], references: [id])
+  orders      Order[]
+  savedItems  SavedItem[]
+  messages    Message[]
+  conversations Conversation[]
+  offers        Offer[]
+  
+  @@index([category])
+  @@index([status])
+  @@index([sellerId])
+  @@map("products")
+}
+
+// Order model for tracking purchases
+model Order {
+  id              String    @id @default(uuid())
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float     @map("total_amount")
+  commission      Float
+  sellerEarnings  Float     @map("seller_earnings")
+  paymentIntentId String?   @map("payment_intent_id")
+  paymentStatus   PaymentStatus @default(PENDING)
+  buyerAddress    Json?     @map("buyer_address")
+  meetingDetails  Json?     @map("meeting_details")
+  meetingTime     DateTime? @map("meeting_time")
+  meetingLocation String?   @map("meeting_location")
+  completedAt     DateTime? @map("completed_at")
+  cancelledAt     DateTime? @map("cancelled_at")
+  cancellationReason String? @map("cancellation_reason") @db.Text
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  productId  String  @map("product_id")
+  product    Product @relation(fields: [productId], references: [id])
+  buyerId    String  @map("buyer_id")
+  buyer      User    @relation("BuyerOrders", fields: [buyerId], references: [id])
+  sellerId   String  @map("seller_id")
+  seller     User    @relation("SellerOrders", fields: [sellerId], references: [id])
+  reviews    Review[]
+  
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+  @@map("orders")
+}
+
+// Review model for user feedback
+model Review {
+  id          String    @id @default(uuid())
+  rating      Int
+  comment     String?   @db.Text
+  isVisible   Boolean   @default(true) @map("is_visible")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  reviewerId  String    @map("reviewer_id")
+  reviewer    User      @relation("SentReviews", fields: [reviewerId], references: [id])
+  receiverId  String    @map("receiver_id")
+  receiver    User      @relation("ReceivedReviews", fields: [receiverId], references: [id])
+  orderId     String    @map("order_id")
+  order       Order     @relation(fields: [orderId], references: [id])
+  
+  @@index([reviewerId])
+  @@index([receiverId])
+  @@index([orderId])
+  @@map("reviews")
+}
+
+// Message model for user communication
+model Message {
+  id          String    @id @default(uuid())
+  content     String    @db.Text
+  isRead      Boolean   @default(false) @map("is_read")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  senderId    String    @map("sender_id")
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId  String    @map("receiver_id")
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  productId   String?   @map("product_id")
+  product     Product?  @relation(fields: [productId], references: [id])
+  
+  conversationId String?   @map("conversation_id")
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([productId])
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  productId String    @map("product_id")
+  product   Product   @relation(fields: [productId], references: [id])
+  participant1Id String @map("participant_id_1")
+  participant1   User   @relation("Participant1", fields: [participant1Id], references: [id])
+  participant2Id String @map("participant_id_2")
+  participant2   User   @relation("Participant2", fields: [participant2Id], references: [id])
+  messages  Message[]
+  lastMessageAt DateTime @default(now()) @map("last_message_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([productId, participant1Id, participant2Id])
+  @@map("conversations")
+}
+
+model Offer {
+  id          String      @id @default(uuid())
+  price       Float
+  status      OfferStatus @default(PENDING)
+  productId   String      @map("product_id")
+  product     Product     @relation(fields: [productId], references: [id])
+  buyerId     String      @map("buyer_id")
+  buyer       User        @relation("BuyerOffers", fields: [buyerId], references: [id])
+  sellerId    String      @map("seller_id")
+  seller      User        @relation("SellerOffers", fields: [sellerId], references: [id])
+  expiresAt   DateTime?   @map("expires_at")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("offers")
+}
+
+// Saved items for users
+model SavedItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, productId])
+  @@map("saved_items")
+}
+
+// Notification model
+model Notification {
+  id        String          @id @default(uuid())
+  type      NotificationType
+  content   String          @db.Text
+  isRead    Boolean         @default(false) @map("is_read")
+  metadata  Json?           // Additional data for the notification
+  createdAt DateTime        @default(now()) @map("created_at")
+  
+  // Relations
+  userId    String          @map("user_id")
+  user      User            @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MODERATOR
+  SELLER
+  BUYER
+  USER
+}
+
+enum ProductCondition {
+  NEW
+  USED_LIKE_NEW
+  USED_GOOD
+  USED_FAIR
+  FOR_PARTS
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  INACTIVE
+  FLAGGED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  DISPUTED
+}
+
+enum NotificationType {
+  ORDER_RECEIVED
+  ORDER_CONFIRMED
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  NEW_MESSAGE
+  NEW_REVIEW
+  ACCOUNT_UPDATE
+  PROMOTIONAL
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}

@@ -1,0 +1,17 @@
+Testing connection...
+Connection failed: PrismaClientUnknownRequestError: 
+Invalid `prisma.user.findMany()` invocation in
+E:\APPLICATIONS\applications\applications\sellshop\tmp\test-db.js:7:37
+
+  4 async function main() {
+  5   try {
+  6     console.log('Testing connection...');
+ÔåÆ 7     const users = await prisma.user.findMany(
+Value 'BUYER' not found in enum 'UserRole'
+    at $n.handleRequestError (E:\APPLICATIONS\applications\applications\sellshop\node_modules\@prisma\client\runtime\library.js:121:7505)
+    at $n.handleAndLogRequestError (E:\APPLICATIONS\applications\applications\sellshop\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (E:\APPLICATIONS\applications\applications\sellshop\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at async l (E:\APPLICATIONS\applications\applications\sellshop\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at async main (E:\APPLICATIONS\applications\applications\sellshop\tmp\test-db.js:7:19) {
+  clientVersion: '5.22.0'
+}
